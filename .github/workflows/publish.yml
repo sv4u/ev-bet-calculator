@@ -8,6 +8,8 @@ jobs:
   get-version:
     name: Read version from pubspec
     runs-on: ubuntu-latest
+    outputs:
+      version_tag: ${{ steps.read.outputs.version_tag }}
     steps:
       - uses: actions/checkout@v4
 
