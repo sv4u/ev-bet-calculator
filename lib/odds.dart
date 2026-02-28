@@ -47,9 +47,16 @@ OddsParseResult parseOdds(String raw) {
   throw FormatException('Unrecognized odds format: "$raw"');
 }
 
-double impliedProbabilityFromDecimal(double decimalOdds) => 1.0 / decimalOdds;
+double impliedProbabilityFromDecimal(double decimalOdds) {
+  if (decimalOdds <= 1.0) throw ArgumentError('Decimal odds must be > 1.0.');
+  return 1.0 / decimalOdds;
+}
 
-double profitIfWin(double stake, double decimalOdds) => stake * (decimalOdds - 1.0);
+double profitIfWin(double stake, double decimalOdds) {
+  if (stake <= 0) throw ArgumentError('Stake must be > 0.');
+  if (decimalOdds <= 1.0) throw ArgumentError('Decimal odds must be > 1.0.');
+  return stake * (decimalOdds - 1.0);
+}
 
 /// Expected *profit* with push outcomes.
 ///
@@ -77,7 +84,7 @@ double expectedValueProfitWithPush({
   if (decimalOdds <= 1.0) throw ArgumentError('Decimal odds must be > 1.0.');
   if (pWin < 0 || pWin > 1) throw ArgumentError('pWin must be in [0,1].');
   if (pPush < 0 || pPush > 1) throw ArgumentError('pPush must be in [0,1].');
-  if (pWin + pPush > 1.0) throw ArgumentError('pWin + pPush must be <= 1.');
+  if (pWin + pPush > 1.0 + 1e-9) throw ArgumentError('pWin + pPush must be <= 1.');
 
   final pLose = 1.0 - pWin - pPush;
   final winProfit = profitIfWin(stake, decimalOdds);

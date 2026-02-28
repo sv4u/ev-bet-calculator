@@ -99,8 +99,9 @@ jobs:
       - name: Package (macOS)
         if: runner.os == 'macOS'
         run: |
-          cd build/macos/Build/Products/Release
-          ditto -c -k --sequesterRsrc --keepParent "ev_bet_calculator.app" "../../../ev_bet_calculator-macos-${{ steps.build_id.outputs.id }}.zip"
+          ditto -c -k --sequesterRsrc --keepParent \
+            "build/macos/Build/Products/Release/ev_bet_calculator.app" \
+            "ev_bet_calculator-macos-${{ steps.build_id.outputs.id }}.zip"
 
       - name: Upload desktop artifacts
         uses: actions/upload-artifact@v4
@@ -211,7 +212,7 @@ jobs:
 
   release:
     name: Create GitHub Release
-    needs: [build-desktop, build-linux, build-android]
+    needs: [version-check, build-desktop, build-linux, build-android]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
 

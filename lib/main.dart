@@ -105,9 +105,9 @@ class _EvCalculatorScreenState extends State<EvCalculatorScreen> {
   }
 
   void _onInputsChanged() {
-    _recalc();
-
     if (_hydrating) return;
+
+    _recalc();
 
     _saveDebounce?.cancel();
     _saveDebounce = Timer(const Duration(milliseconds: 250), () async {
@@ -176,7 +176,7 @@ class _EvCalculatorScreenState extends State<EvCalculatorScreen> {
         }
         final pPush = pPushPercent / 100.0;
 
-        if (pWin + pPush > 1.0) {
+        if (pWin + pPush > 1.0 + 1e-9) {
           throw const FormatException('Win% + Push% must be <= 100.');
         }
 
