@@ -1,14 +1,27 @@
-# Build artifacts on every push to main (no release). Use Publish or Bump and Publish for releases.
-name: Build Artifacts
+# Create a GitHub Release from the current pubspec.yaml version (no version bump).
+name: Publish
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch: {}
 
 jobs:
+  get-version:
+    name: Read version from pubspec
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read version
+        id: read
+        run: |
+          set -euo pipefail
+          PUB=$(grep -E '^version:\s*' pubspec.yaml | head -n1 | awk '{print $2}')
+          SEMVER="${PUB%%+*}"
+          echo "version_tag=v${SEMVER}" >> $GITHUB_OUTPUT
+
   build-desktop:
     name: Build Desktop (${{ matrix.os }})
+    needs: [get-version]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -16,11 +29,6 @@ jobs:
         os: [windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@v4
-
-      - name: Compute build identifier
-        id: build_id
-        shell: bash
-        run: echo "id=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -46,7 +54,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          $id = "${{ steps.build_id.outputs.id }}"
+          $id = "${{ needs.get-version.outputs.version_tag }}"
           $out = "ev_bet_calculator-windows-x64-$id.zip"
           Compress-Archive -Path "build\windows\x64\runner\Release\*" -DestinationPath $out -Force
 
@@ -59,24 +67,21 @@ jobs:
         run: |
           ditto -c -k --sequesterRsrc --keepParent \
             "build/macos/Build/Products/Release/ev_bet_calculator.app" \
-            "ev_bet_calculator-macos-${{ steps.build_id.outputs.id }}.zip"
+            "ev_bet_calculator-macos-${{ needs.get-version.outputs.version_tag }}.zip"
 
       - name: Upload desktop artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ev_bet_calculator-${{ runner.os }}-${{ steps.build_id.outputs.id }}
+          name: ev_bet_calculator-${{ runner.os }}-${{ needs.get-version.outputs.version_tag }}
           path: |
             *.zip
 
   build-linux:
     name: Build Linux (release bundle)
+    needs: [get-version]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Compute build identifier
-        id: build_id
-        run: echo "id=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
 
       - name: Install Linux build dependencies
         run: |
@@ -107,24 +112,21 @@ jobs:
         run: |
           set -euo pipefail
           cd build/linux/x64/release
-          tar -czf ../../../../ev_bet_calculator-linux-x64-${{ steps.build_id.outputs.id }}.tar.gz bundle
+          tar -czf ../../../../ev_bet_calculator-linux-x64-${{ needs.get-version.outputs.version_tag }}.tar.gz bundle
 
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ev_bet_calculator-Linux-${{ steps.build_id.outputs.id }}
+          name: ev_bet_calculator-Linux-${{ needs.get-version.outputs.version_tag }}
           path: |
             ev_bet_calculator-linux-x64-*.tar.gz
 
   build-android:
     name: Build Android (debug APK)
+    needs: [get-version]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Compute build identifier
-        id: build_id
-        run: echo "id=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -141,15 +143,52 @@ jobs:
       - name: Build APK (debug)
         run: flutter build apk --debug
 
-      - name: Rename APK with build id
+      - name: Rename APK with version
         run: |
           set -euo pipefail
           cp build/app/outputs/flutter-apk/app-debug.apk \
-             ev_bet_calculator-android-debug-${{ steps.build_id.outputs.id }}.apk
+             ev_bet_calculator-android-debug-${{ needs.get-version.outputs.version_tag }}.apk
 
       - name: Upload Android artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ev_bet_calculator-Android-debug-${{ steps.build_id.outputs.id }}
+          name: ev_bet_calculator-Android-debug-${{ needs.get-version.outputs.version_tag }}
           path: |
             ev_bet_calculator-android-debug-*.apk
+
+  release:
+    name: Create GitHub Release
+    needs: [get-version, build-desktop, build-linux, build-android]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all workflow artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Compute prerelease flag
+        id: pre
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${{ needs.get-version.outputs.version_tag }}"
+          if [[ "$TAG" =~ ^v0\.[0-9]+\.[0-9]+([\-].+)?$ ]]; then
+            echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
+          elif [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-.+$ ]]; then
+            echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create release and upload assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.get-version.outputs.version_tag }}
+          generate_release_notes: true
+          prerelease: ${{ steps.pre.outputs.is_prerelease }}
+          files: |
+            dist/**/*.zip
+            dist/**/*.tar.gz
+            dist/**/*.apk
