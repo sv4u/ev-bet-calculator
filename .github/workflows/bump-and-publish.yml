@@ -23,7 +23,7 @@ jobs:
     outputs:
       version_tag: ${{ steps.bump_version.outputs.version_tag }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -80,7 +80,7 @@ jobs:
       matrix:
         os: [windows-latest, macos-latest]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: main
 
@@ -124,7 +124,7 @@ jobs:
             "ev_bet_calculator-macos-${{ needs.bump.outputs.version_tag }}.zip"
 
       - name: Upload desktop artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ev_bet_calculator-${{ runner.os }}-${{ needs.bump.outputs.version_tag }}
           path: |
@@ -135,7 +135,7 @@ jobs:
     needs: [bump]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: main
 
@@ -171,7 +171,7 @@ jobs:
           tar -czf ../../../../ev_bet_calculator-linux-x64-${{ needs.bump.outputs.version_tag }}.tar.gz bundle
 
       - name: Upload Linux artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ev_bet_calculator-Linux-${{ needs.bump.outputs.version_tag }}
           path: |
@@ -182,7 +182,7 @@ jobs:
     needs: [bump]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: main
 
@@ -208,7 +208,7 @@ jobs:
              ev_bet_calculator-android-debug-${{ needs.bump.outputs.version_tag }}.apk
 
       - name: Upload Android artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ev_bet_calculator-Android-debug-${{ needs.bump.outputs.version_tag }}
           path: |
@@ -222,7 +222,7 @@ jobs:
       contents: write
     steps:
       - name: Download all workflow artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: dist
 
