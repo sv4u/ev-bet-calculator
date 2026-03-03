@@ -10,8 +10,8 @@
 /// - Push outcomes return stake and yield zero profit.
 /// - EV is expected profit (currency), not expected payout.
 class OddsParseResult {
+  const OddsParseResult(this.decimalOdds);
   final double decimalOdds; // e.g. 1.91
-  OddsParseResult(this.decimalOdds);
 }
 
 OddsParseResult parseOdds(String raw) {
@@ -22,25 +22,25 @@ OddsParseResult parseOdds(String raw) {
   if (frac != null) {
     final n = double.parse(frac.group(1)!);
     final d = double.parse(frac.group(2)!);
-    if (d == 0) throw FormatException('Fractional odds denominator cannot be 0.');
+    if (d == 0) throw const FormatException('Fractional odds denominator cannot be 0.');
     final decimal = 1.0 + (n / d);
-    if (decimal <= 1.0) throw FormatException('Decimal odds must be > 1.0.');
+    if (decimal <= 1.0) throw const FormatException('Decimal odds must be > 1.0.');
     return OddsParseResult(decimal);
   }
 
   // American: "+150" or "-110"
   if (RegExp(r'^[+-]\d+$').hasMatch(s)) {
     final a = int.parse(s);
-    if (a == 0) throw FormatException('American odds cannot be 0.');
+    if (a == 0) throw const FormatException('American odds cannot be 0.');
     final decimal = a > 0 ? 1.0 + (a / 100.0) : 1.0 + (100.0 / a.abs());
-    if (decimal <= 1.0) throw FormatException('Decimal odds must be > 1.0.');
+    if (decimal <= 1.0) throw const FormatException('Decimal odds must be > 1.0.');
     return OddsParseResult(decimal);
   }
 
   // Decimal: "1.91"
   final decimal = double.tryParse(s);
   if (decimal != null) {
-    if (decimal <= 1.0) throw FormatException('Decimal odds must be > 1.0.');
+    if (decimal <= 1.0) throw const FormatException('Decimal odds must be > 1.0.');
     return OddsParseResult(decimal);
   }
 

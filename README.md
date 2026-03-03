@@ -66,11 +66,33 @@ Reset button restores defaults:
 
 ------------------------------------------------------------------------
 
+## Project Structure
+
+``` text
+lib/
+├── main.dart                              # Entry point: runApp()
+├── app.dart                               # MaterialApp, theme, routing
+├── core/
+│   └── odds.dart                          # Odds parsing + EV math (pure domain logic)
+├── data/
+│   └── calculator_preferences.dart        # SharedPreferences persistence layer
+└── features/
+    └── calculator/
+        └── calculator_screen.dart         # Calculator UI + local state
+
+test/
+├── odds_test.dart                         # Unit tests for core/odds.dart
+└── widget_test.dart                       # Smoke test for the app widget
+```
+
+------------------------------------------------------------------------
+
 ## Local Development
 
 ### Prerequisites
 
 - Flutter SDK installed and available on PATH
+- **CocoaPods** (required for iOS and macOS builds; `flutter pub get` triggers `pod install`)
 
 ### Run
 
@@ -116,6 +138,7 @@ The iOS app is for local use only (no App Store). You need a Mac with Xcode and 
 
 - **Mac** with macOS 11 (Big Sur) or later
 - **Xcode** from the Mac App Store (includes the iOS Simulator and device tooling)
+- **CocoaPods** (`gem install cocoapods` or `brew install cocoapods`)
 - **Apple ID** (no paid Developer Program membership required for personal devices)
 - **Flutter** installed and on your PATH
 

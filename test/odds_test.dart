@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ev_bet_calculator/odds.dart';
+import 'package:ev_bet_calculator/core/odds.dart';
 
 void main() {
   group('parseOdds', () {

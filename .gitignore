@@ -5,9 +5,11 @@
 *.swp
 .DS_Store
 .atom/
+.build/
 .buildlog/
 .history
 .svn/
+.swiftpm/
 migrate_working_dir/
 
 # IntelliJ related
@@ -58,6 +60,7 @@ coverage/
 
 # macOS
 **/macos/Flutter/GeneratedPluginRegistrant.swift
+**/macos/**/Pods/
 
 # Windows
 **/windows/flutter/generated_plugin_registrant.cc
