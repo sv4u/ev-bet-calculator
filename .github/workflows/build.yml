@@ -11,7 +11,7 @@ jobs:
     name: Analyze and test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -36,7 +36,7 @@ jobs:
       matrix:
         os: [windows-latest, macos-latest]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Compute build identifier
         id: build_id
@@ -83,7 +83,7 @@ jobs:
             "ev_bet_calculator-macos-${{ steps.build_id.outputs.id }}.zip"
 
       - name: Upload desktop artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ev_bet_calculator-${{ runner.os }}-${{ steps.build_id.outputs.id }}
           path: |
@@ -93,7 +93,7 @@ jobs:
     name: Build Linux (release bundle)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Compute build identifier
         id: build_id
@@ -131,7 +131,7 @@ jobs:
           tar -czf ../../../../ev_bet_calculator-linux-x64-${{ steps.build_id.outputs.id }}.tar.gz bundle
 
       - name: Upload Linux artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ev_bet_calculator-Linux-${{ steps.build_id.outputs.id }}
           path: |
@@ -141,7 +141,7 @@ jobs:
     name: Build Android (debug APK)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Compute build identifier
         id: build_id
@@ -169,7 +169,7 @@ jobs:
              ev_bet_calculator-android-debug-${{ steps.build_id.outputs.id }}.apk
 
       - name: Upload Android artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ev_bet_calculator-Android-debug-${{ steps.build_id.outputs.id }}
           path: |
